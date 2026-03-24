@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectify AI - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="fas fa-robot"></i>
+                    <h2>Projectify<span class="ai-text">AI</span></h2>
+                </div>
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <div class="user-info">
+                    <h4 id="userName">Loading...</h4>
+                    <p id="userEmail">user@example.com</p>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Overview</span>
+                </a>
+                <a href="#" class="nav-item" data-section="projects">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>My Projects</span>
+                    <span class="badge" id="projectsCount">0</span>
+                </a>
+                <a href="#" class="nav-item" data-section="add-project">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Project</span>
+                </a>
+                <a href="#" class="nav-item" data-section="ai-insights">
+                    <i class="fas fa-brain"></i>
+                    <span>AI Insights</span>
+                </a>
+                <a href="#" class="nav-item" data-section="analytics">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Analytics</span>
+                </a>
+                <div class="nav-divider"></div>
+                <a href="#" class="nav-item" data-section="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+                <a href="#" class="nav-item" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <div class="ai-status">
+                    <div class="status-indicator online"></div>
+                    <span>AI Service: <strong id="aiStatus">Online</strong></span>
+                </div>
+                <p class="version">v1.0.0</p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="search-bar">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search projects..." id="searchInput">
+                </div>
+                <div class="topbar-actions">
+                    <button class="btn btn-outline btn-small" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <button class="btn btn-primary btn-small" id="newProjectBtn">
+                        <i class="fas fa-plus"></i> New Project
+                    </button>
+                    <div class="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge">3</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Content Sections -->
+            <div class="content-sections">
+                <!-- Overview Section -->
+                <section id="overviewSection" class="content-section active">
+                    <div class="section-header">
+                        <h3>Dashboard Overview</h3>
+                        <p>Welcome back! Here's your project summary.</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon total">
+                                <i class="fas fa-folder-open"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>Total Projects</h4>
+                                <p class="stat-value" id="totalProjects">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon average">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>Average Score</h4>
+                                <p class="stat-value" id="averageScore">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon best">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>Best Project</h4>
+                                <p class="stat-value" id="bestScore">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon suggestions">
+                                <i class="fas fa-lightbulb"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h4>AI Suggestions</h4>
+                                <p class="stat-value" id="totalSuggestions">0</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="recent-projects">
+                        <div class="section-header">
+                            <h4>Recent Projects</h4>
+                            <a href="#" class="view-all" data-section="projects">View All</a>
+                        </div>
+                        <div class="projects-list" id="recentProjects">
+                            <!-- Recent projects will be loaded here -->
+                            <div class="empty-state">
+                                <i class="fas fa-project-diagram"></i>
+                                <p>No projects yet. Add your first project!</p>
+                                <button class="btn btn-primary" id="addFirstProject">Add Project</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="ai-tips">
+                        <div class="section-header">
+                            <h4>AI Improvement Tips</h4>
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <div class="tips-list" id="aiTips">
+                            <div class="tip-card">
+                                <i class="fas fa-code"></i>
+                                <p>Add comprehensive tests to improve code quality score</p>
+                            </div>
+                            <div class="tip-card">
+                                <i class="fas fa-book"></i>
+                                <p>Improve documentation for better maintainability</p>
+                            </div>
+                            <div class="tip-card">
+                                <i class="fas fa-server"></i>
+                                <p>Consider adding CI/CD pipeline for automation</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Projects Section -->
+                <section id="projectsSection" class="content-section">
+                    <div class="section-header">
+                        <h3>My Projects</h3>
+                        <div class="section-actions">
+                            <div class="filter-options">
+                                <select id="projectFilter">
+                                    <option value="all">All Projects</option>
+                                    <option value="high-score">High Score (80+)</option>
+                                    <option value="medium-score">Medium Score (50-79)</option>
+                                    <option value="low-score">Low Score (0-49)</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-primary" id="addProjectBtn">
+                                <i class="fas fa-plus"></i> Add Project
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="error-message" style="display: none; margin-bottom: 20px;"></div>
+                    <div class="projects-grid" id="projects-container">
+                        <!-- Projects will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-project-diagram"></i>
+                            <p>No projects yet. Start by adding your first project!</p>
+                            <button class="btn btn-primary" id="addProjectEmpty">Add Project</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Add Project Section -->
+                <section id="addProjectSection" class="content-section">
+                    <div class="section-header">
+                        <h3>Add New Project</h3>
+                        <p>Submit your project for AI analysis and feedback</p>
+                    </div>
+                    
+                    <form id="projectForm" class="project-form" onsubmit="event.preventDefault(); submitProject();">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="projectName">Project Name *</label>
+                                <input type="text" id="projectName" placeholder="Enter project name" required>
+                                <div class="form-help">Give your project a descriptive name</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="projectDescription">Description *</label>
+                                <textarea id="projectDescription" placeholder="Describe your project in detail..." rows="4" required></textarea>
+                                <div class="form-help">Include technologies used, purpose, and key features</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="githubLink">GitHub Repository Link</label>
+                                <input type="url" id="githubLink" placeholder="https://github.com/username/repository">
+                                <div class="form-help">Optional: Link to your GitHub repository for better analysis</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-outline" id="cancelProjectBtn">Cancel</button>
+                            <button type="submit" class="btn btn-primary" id="submitProjectBtn">
+                                <i class="fas fa-robot"></i> Submit for AI Analysis
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div id="projectFormStatus" class="form-status"></div>
+                    
+                    <div class="form-status" id="projectFormStatus"></div>
+                </section>
+
+                <!-- AI Insights Section -->
+                <section id="insightsSection" class="content-section">
+                    <div class="section-header">
+                        <h3>AI Insights & Analysis</h3>
+                        <p>Intelligent feedback and improvement suggestions</p>
+                    </div>
+                    
+                    <div class="insights-container">
+                        <div class="ai-status-card">
+                            <div class="status-header">
+                                <i class="fas fa-brain"></i>
+                                <h4>AI Analysis Status</h4>
+                            </div>
+                            <div class="status-content">
+                                <div class="status-item">
+                                    <span class="status-label">Service:</span>
+                                    <span class="status-value online" id="aiServiceStatus">Online</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Model:</span>
+                                    <span class="status-value" id="aiModel">Gemini 1.5 Pro</span>
+                                </div>
+                                <div class="status-item">
+                                    <span class="status-label">Analyses Completed:</span>
+                                    <span class="status-value" id="analysesCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="insights-list" id="insightsList">
+                            <div class="empty-state">
+                                <i class="fas fa-chart-line"></i>
+                                <p>No AI insights yet. Submit a project for analysis!</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analytics Section -->
+                <section id="analyticsSection" class="content-section">
+                    <div class="section-header">
+                        <h3>Project Analytics</h3>
+                        <p>Track your progress and improvement over time</p>
+                    </div>
+                    
+                    <div class="analytics-container">
+                        <div class="score-distribution">
+                            <h4>Score Distribution</h4>
+                            <div class="distribution-chart" id="scoreChart">
+                                <!-- Chart will be rendered here -->
+                                <div class="chart-placeholder">
+                                    <p>No data available yet</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="improvement-timeline">
+                            <h4>Improvement Timeline</h4>
+                            <div class="timeline-chart" id="timelineChart">
+                                <!-- Timeline will be rendered here -->
+                                <div class="chart-placeholder">
+                                    <p>Submit more projects to see your improvement timeline</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Settings Section -->
+                <section id="settingsSection" class="content-section">
+                    <div class="section-header">
+                        <h3>Account Settings</h3>
+                        <p>Manage your account and preferences</p>
+                    </div>
+                    
+                    <div class="settings-container">
+                        <div class="settings-card">
+                            <h4>Profile Information</h4>
+                            <form id="profileForm">
+                                <div class="form-group">
+                                    <label for="profileName">Display Name</label>
+                                    <input type="text" id="profileName" placeholder="Enter your name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="profileEmail">Email Address</label>
+                                    <input type="email" id="profileEmail" disabled>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </form>
+                        </div>
+                        
+                        <div class="settings-card">
+                            <h4>Security</h4>
+                            <div class="security-options">
+                                <button class="btn btn-outline" id="changePasswordBtn">Change Password</button>
+                                <button class="btn btn-outline" id="twoFactorBtn">Two-Factor Authentication</button>
+                            </div>
+                        </div>
+                        
+                        <div class="settings-card danger-zone">
+                            <h4>Danger Zone</h4>
+                            <p>Permanently delete your account and all data</p>
+                            <button class="btn btn-danger" id="deleteAccountBtn">Delete Account</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Project Detail Modal -->
+    <div id="projectDetailModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="projectModalTitle">Project Details</h3>
+                <button class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body" id="projectModalBody">
+                <!-- Project details will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-robot fa-spin"></i>
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    
+  <!-- Firebase SDK (compat version for global firebase object) -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGtIvFJRWwCTkDga3qAT_lJnltO0bEF0s",
+      authDomain: "projectify-ai.firebaseapp.com",
+      projectId: "projectify-ai",
+      storageBucket: "projectify-ai.firebasestorage.app",
+      messagingSenderId: "168760542649",
+      appId: "1:168760542649:web:2793e0cbef33fa6d7c2268",
+      measurementId: "G-BCKJQLY1Q8"
+    };
+    
+    try {
+      const firebaseApp = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth(firebaseApp);
+      
+      // Helper functions to match modular SDK signature
+      const createUserWithEmailAndPassword = (authInstance, email, password) => {
+        return authInstance.createUserWithEmailAndPassword(email, password);
+      };
+      const signInWithEmailAndPassword = (authInstance, email, password) => {
+        return authInstance.signInWithEmailAndPassword(email, password);
+      };
+      const signOut = (authInstance) => {
+        return authInstance.signOut();
+      };
+      const updateProfile = (user, profile) => {
+        return user.updateProfile(profile);
+      };
+      
+      // Set global firebase object with all necessary functions and instances
+      window.firebase = {
+        app: firebaseApp,
+        auth: auth,
+        functions: {
+          createUserWithEmailAndPassword,
+          signInWithEmailAndPassword,
+          signOut,
+          updateProfile
+        }
+      };
+      
+      console.log('Firebase initialized successfully with auth functions (compat)');
+    } catch (error) {
+      console.error('Firebase initialization failed:', error);
+      // Set empty object to prevent errors
+      window.firebase = { app: null, auth: null, functions: {} };
+    }
+  </script>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js" defer></script>
+</body>
+</html>

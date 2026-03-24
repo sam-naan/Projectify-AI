@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projectify AI - Welcome</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo">
+                <i class="fas fa-robot"></i>
+                <h1>Projectify<span class="ai-text">AI</span></h1>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <section class="hero">
+                <div class="hero-content">
+                    <h2>Transform Your Projects with AI-Powered Insights</h2>
+                    <p class="subtitle">Submit your software projects, get intelligent analysis, scores, and improvement suggestions from advanced AI.</p>
+                    <div class="hero-buttons">
+                        <button id="loginHeroBtn" class="btn btn-outline btn-large">
+                            <i class="fas fa-sign-in-alt"></i> Log In
+                        </button>
+                        <button id="signupHeroBtn" class="btn btn-primary btn-large">
+                            <i class="fas fa-user-plus"></i> Sign Up
+                        </button>
+                    </div>
+                </div>
+                <div class="hero-image">
+                    <div class="dashboard-preview">
+                        <div class="preview-header">
+                            <div class="preview-dots">
+                                <span class="dot red"></span>
+                                <span class="dot yellow"></span>
+                                <span class="dot green"></span>
+                            </div>
+                            <span class="preview-title">Project Dashboard</span>
+                        </div>
+                        <div class="preview-content">
+                            <div class="project-card preview">
+                                <div class="project-score">
+                                    <div class="score-circle">85</div>
+                                    <span class="score-label">AI Score</span>
+                                </div>
+                                <div class="project-details">
+                                    <h4>Upgrade Project</h4>
+                                    <p>A modernized version of the original project with improved performance and user experience.</p>
+                                    <div class="ai-suggestions">
+                                        <span class="suggestion-tag">Add tests</span>
+                                        <span class="suggestion-tag">Improve SEO</span>
+                                        <span class="suggestion-tag">Optimize images</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <footer class="footer">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <i class="fas fa-robot"></i>
+                        <h3>     Projectify<span class="ai-text">AI</span></h3>
+                         <p>      AI-powered project analysis platform</p>
+                </div>
+                <div class="footer-links">
+                    <a href="#"><i class="fab fa-github"></i> sam-naan</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Projectify AI. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Welcome Back</h3>
+                <button id="closeModal" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="auth-tabs">
+                    <button id="tabLogin" class="tab-btn active">Log In</button>
+                    <button id="tabRegister" class="tab-btn">Sign Up</button>
+                </div>
+                
+                <form id="loginForm" class="auth-form active">
+                    <div class="form-group">
+                        <label for="loginEmail">Email</label>
+                        <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-sign-in-alt"></i> Log In
+                    </button>
+                    <div class="form-footer">
+                        <a href="#" class="forgot-password">Forgot password?</a>
+                    </div>
+                </form>
+
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="registerName">Full Name</label>
+                        <input type="text" id="registerName" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerEmail">Email</label>
+                        <input type="email" id="registerEmail" placeholder="Enter your email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Password</label>
+                        <input type="password" id="registerPassword" placeholder="Create a password (min. 6 characters)" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="registerConfirmPassword">Confirm Password</label>
+                        <input type="password" id="registerConfirmPassword" placeholder="Confirm your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-user-plus"></i> Create Account
+                    </button>
+                </form>
+
+                <div class="auth-status" id="authStatus"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    
+  <!-- Firebase SDK (compat version for global firebase object) -->
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.11.1/firebase-auth-compat.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAGtIvFJRWwCTkDga3qAT_lJnltO0bEF0s",
+      authDomain: "projectify-ai.firebaseapp.com",
+      projectId: "projectify-ai",
+      storageBucket: "projectify-ai.firebasestorage.app",
+      messagingSenderId: "168760542649",
+      appId: "1:168760542649:web:2793e0cbef33fa6d7c2268",
+      measurementId: "G-BCKJQLY1Q8"
+    };
+    
+    try {
+      const firebaseApp = firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth(firebaseApp);
+      
+      // Helper functions to match modular SDK signature
+      const createUserWithEmailAndPassword = (authInstance, email, password) => {
+        return authInstance.createUserWithEmailAndPassword(email, password);
+      };
+      const signInWithEmailAndPassword = (authInstance, email, password) => {
+        return authInstance.signInWithEmailAndPassword(email, password);
+      };
+      const signOut = (authInstance) => {
+        return authInstance.signOut();
+      };
+      const updateProfile = (user, profile) => {
+        return user.updateProfile(profile);
+      };
+      
+      // Set global firebase object with all necessary functions and instances
+      window.firebase = {
+        app: firebaseApp,
+        auth: auth,
+        functions: {
+          createUserWithEmailAndPassword,
+          signInWithEmailAndPassword,
+          signOut,
+          updateProfile
+        }
+      };
+      
+      console.log('Firebase initialized successfully with auth functions (compat)');
+    } catch (error) {
+      console.error('Firebase initialization failed:', error);
+      // Set empty object to prevent errors
+      window.firebase = { app: null, auth: null, functions: {} };
+    }
+  </script>
+
+    <script src="js/auth.js"></script>
+    <script>
+        // Modal functionality
+        const authModal = document.getElementById('authModal');
+        const closeModal = document.getElementById('closeModal');
+        const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
+        const loginHeroBtn = document.getElementById('loginHeroBtn');
+        const signupHeroBtn = document.getElementById('signupHeroBtn');
+        const tabLogin = document.getElementById('tabLogin');
+        const tabRegister = document.getElementById('tabRegister');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const modalTitle = document.getElementById('modalTitle');
+
+        function openModal(tab = 'login') {
+            authModal.style.display = 'flex';
+            if (tab === 'login') {
+                showLogin();
+            } else {
+                showRegister();
+            }
+        }
+
+        function closeModalFunc() {
+            authModal.style.display = 'none';
+        }
+
+        function showLogin() {
+            tabLogin.classList.add('active');
+            tabRegister.classList.remove('active');
+            loginForm.classList.add('active');
+            registerForm.classList.remove('active');
+            modalTitle.textContent = 'Welcome Back';
+        }
+
+        function showRegister() {
+            tabRegister.classList.add('active');
+            tabLogin.classList.remove('active');
+            registerForm.classList.add('active');
+            loginForm.classList.remove('active');
+            modalTitle.textContent = 'Create Account';
+        }
+
+        // Event listeners
+        
+        // registerBtn.addEventListener('click', () => openModal('register'));
+        loginHeroBtn.addEventListener('click', () => openModal('login'));
+        signupHeroBtn.addEventListener('click', () => openModal('register'));
+        closeModal.addEventListener('click', closeModalFunc);
+        tabLogin.addEventListener('click', showLogin);
+        tabRegister.addEventListener('click', showRegister);
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target === authModal) {
+                closeModalFunc();
+            }
+        });
+
+        // Form submissions
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            // This will be handled by auth.js
+            window.handleLogin(email, password);
+        });
+
+        registerForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('registerName').value;
+            const email = document.getElementById('registerEmail').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showAuthStatus('Passwords do not match', 'error');
+                return;
+            }
+            
+            // This will be handled by auth.js
+            window.handleRegister(name, email, password);
+        });
+
+        function showAuthStatus(message, type = 'info') {
+            const statusEl = document.getElementById('authStatus');
+            statusEl.textContent = message;
+            statusEl.className = `auth-status ${type}`;
+            statusEl.style.display = 'block';
+            
+            if (type === 'success') {
+                setTimeout(() => {
+                    closeModalFunc();
+                    // Redirect to dashboard
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            }
+        }
+
+        // Make function available globally
+        window.showAuthStatus = showAuthStatus;
+    </script>
+</body>
+</html>
