@@ -44,7 +44,12 @@ if (process.env.FRONTEND_URL) {
   }
 }
 
+// Apply CORS middleware
 app.use(cors(corsOptions));
+
+// Handle preflight requests for all routes
+app.options('*', cors(corsOptions));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api', limiter);
