@@ -116,21 +116,32 @@ class Project {
    */
   static async findByUser(userId, limit = 10) {
     try {
+      // First try without limit to avoid index requirement
       const snapshot = await firestore.collection('projects')
         .where('userId', '==', userId)
-        .orderBy('createdAt', 'desc')
-        .limit(limit)
         .get();
       
       if (snapshot.empty) return [];
       
-      return snapshot.docs.map(doc => new Project({
+      // Convert to Project objects
+      const projects = snapshot.docs.map(doc => new Project({
         id: doc.id,
         ...doc.data()
       }));
+      
+      // Sort by createdAt descending
+      projects.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
+        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
+        return dateB - dateA;
+      });
+      
+      // Apply limit manually
+      return projects.slice(0, limit);
     } catch (error) {
       console.error('Error finding user projects:', error);
-      throw new Error('Failed to get user projects');
+      console.error('Error details:', error.message, error.stack);
+      throw new Error('Failed to get user projects: ' + error.message);
     }
   }
 

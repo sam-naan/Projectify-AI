@@ -1,8 +1,75 @@
 // frontend/public/js/dashboard.js
 
+// Function to display user information
+function displayUserInfo() {
+    // Try to get user from authService first, then apiService
+    let user = null;
+    if (authService && authService.currentUser) {
+        user = authService.currentUser;
+    } else if (apiService && apiService.getCurrentUser) {
+        user = apiService.getCurrentUser();
+    }
+    
+    if (user) {
+        const dropdownUserNameElement = document.getElementById('dropdownUserName');
+        const dropdownUserEmailElement = document.getElementById('dropdownUserEmail');
+        
+        const displayName = user.displayName || user.fullName || user.email?.split('@')[0] || 'User';
+        const email = user.email || 'No email available';
+        
+        if (dropdownUserNameElement) {
+            dropdownUserNameElement.textContent = displayName;
+        }
+        
+        if (dropdownUserEmailElement) {
+            dropdownUserEmailElement.textContent = email;
+        }
+        
+        // Update avatar with first letter of name
+        const dropdownAvatarElement = document.querySelector('.dropdown-avatar i');
+        const smallAvatarElement = document.querySelector('.avatar-small i');
+        
+        const firstLetter = displayName.charAt(0).toUpperCase();
+        
+        if (dropdownAvatarElement) {
+            dropdownAvatarElement.textContent = firstLetter;
+        }
+        
+        if (smallAvatarElement) {
+            smallAvatarElement.textContent = firstLetter;
+        }
+    } else {
+        console.warn('No user data available');
+        // Try to get from Firebase auth directly
+        if (window.firebase && window.firebase.auth) {
+            const currentUser = window.firebase.auth.currentUser;
+            if (currentUser) {
+                const displayName = currentUser.displayName || currentUser.email?.split('@')[0] || 'User';
+                const email = currentUser.email || 'No email available';
+                
+                const dropdownUserNameElement = document.getElementById('dropdownUserName');
+                const dropdownUserEmailElement = document.getElementById('dropdownUserEmail');
+                
+                if (dropdownUserNameElement) {
+                    dropdownUserNameElement.textContent = displayName;
+                }
+                
+                if (dropdownUserEmailElement) {
+                    dropdownUserEmailElement.textContent = email;
+                }
+            }
+        }
+    }
+}
+
 // Function to fetch projects from the backend API
 async function fetchProjects() {
     try {
+        if (typeof apiService === 'undefined' || !apiService.projects) {
+            console.warn('apiService not available, returning empty projects list');
+            return [];
+        }
+        
         const data = await apiService.projects.getAll();
         return data.projects || [];
     } catch (error) {
@@ -116,34 +183,167 @@ function analyzeProject(projectId) {
 
 // Initialize dashboard on page load
 document.addEventListener('DOMContentLoaded', async () => {
-    // Check authentication
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = 'index.html';
-        return;
+    console.log('Dashboard loading...');
+    
+    try {
+        // Wait for authService to be available and Firebase auth to initialize
+        let authChecked = false;
+        let retryCount = 0;
+        const maxRetries = 5;
+        
+        while (!authChecked && retryCount < maxRetries) {
+            // Check if authService is available
+            if (typeof authService !== 'undefined' && authService && typeof authService.isAuthenticated === 'function') {
+                if (authService.isAuthenticated()) {
+                    authChecked = true;
+                    console.log('User authenticated successfully');
+                    break;
+                } else {
+                    console.log(`User not authenticated yet (attempt ${retryCount + 1}/${maxRetries}), waiting...`);
+                    // Wait for Firebase auth to restore state
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    retryCount++;
+                }
+            } else {
+                console.warn('authService not available, waiting...');
+                await new Promise(resolve => setTimeout(resolve, 500));
+                retryCount++;
+            }
+        }
+        
+        // If still not authenticated after retries, redirect to login
+        if (!authChecked) {
+            console.log('User not authenticated after waiting, redirecting to index.html');
+            window.location.href = 'index.html';
+            return;
+        }
+
+        // Check if apiService is available
+        if (typeof apiService === 'undefined') {
+            console.error('apiService is not defined. Make sure api.js is loaded before dashboard.js');
+            // Show error to user
+            const errorElement = document.getElementById('error-message');
+            if (errorElement) {
+                errorElement.textContent = 'Error: API service not available. Please refresh the page.';
+                errorElement.style.display = 'block';
+            }
+        } else {
+            console.log('apiService is available');
+            
+            // Ensure apiService has authentication token
+            if (!apiService.token && window.firebase && window.firebase.auth && window.firebase.auth.currentUser) {
+                console.log('Getting fresh token for apiService...');
+                try {
+                    const firebaseUser = window.firebase.auth.currentUser;
+                    const token = await firebaseUser.getIdToken();
+                    apiService.setToken(token);
+                    apiService.setUser({
+                        uid: firebaseUser.uid,
+                        email: firebaseUser.email,
+                        displayName: firebaseUser.displayName
+                    });
+                    console.log('Token set in apiService');
+                } catch (tokenError) {
+                    console.warn('Failed to get Firebase token:', tokenError);
+                }
+            }
+        }
+
+        // Display user information
+        displayUserInfo();
+
+        // Fetch and render projects
+        const projects = await fetchProjects();
+        renderProjects(projects);
+    } catch (error) {
+        console.error('Error initializing dashboard:', error);
+        // Show error to user
+        const errorElement = document.getElementById('error-message');
+        if (errorElement) {
+            errorElement.textContent = `Error loading dashboard: ${error.message}`;
+            errorElement.style.display = 'block';
+        }
     }
 
-    // Fetch and render projects
-    const projects = await fetchProjects();
-    renderProjects(projects);
-
-    // Setup logout functionality
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', () => {
-            localStorage.removeItem('token');
-            window.location.href = 'index.html';
+    // Setup profile dropdown functionality
+    const profileDropdownBtn = document.getElementById('profileDropdownBtn');
+    const profileDropdown = document.getElementById('profileDropdown');
+    
+    if (profileDropdownBtn && profileDropdown) {
+        // Toggle dropdown on button click
+        profileDropdownBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('show');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!profileDropdown.contains(e.target) && !profileDropdownBtn.contains(e.target)) {
+                profileDropdown.classList.remove('show');
+            }
+        });
+        
+        // Close dropdown on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                profileDropdown.classList.remove('show');
+            }
         });
     }
 
-    // Setup navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
+    // Setup logout functionality
+    const logoutBtn = document.getElementById('logoutBtn');
+    const dropdownLogoutBtn = document.getElementById('dropdownLogoutBtn');
+    
+    const handleLogout = async () => {
+        await authService.logout();
+        window.location.href = 'index.html';
+    };
+    
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', handleLogout);
+    }
+    
+    if (dropdownLogoutBtn) {
+        dropdownLogoutBtn.addEventListener('click', handleLogout);
+    }
+
+    // Setup navigation for dropdown items
+    document.querySelectorAll('.dropdown-item[data-section]').forEach(item => {
         item.addEventListener('click', function(e) {
             e.preventDefault();
             const section = this.getAttribute('data-section');
             showSection(section);
+            // Close dropdown after selection
+            if (profileDropdown) {
+                profileDropdown.classList.remove('show');
+            }
         });
     });
+
+    // Setup add project buttons
+    const newProjectBtn = document.getElementById('newProjectBtn');
+    if (newProjectBtn) {
+        newProjectBtn.addEventListener('click', () => showSection('addProject'));
+    }
+    const addProjectBtn = document.getElementById('addProjectBtn');
+    if (addProjectBtn) {
+        addProjectBtn.addEventListener('click', () => showSection('addProject'));
+    }
+    const addFirstProject = document.getElementById('addFirstProject');
+    if (addFirstProject) {
+        addFirstProject.addEventListener('click', () => showSection('addProject'));
+    }
+    const addProjectEmpty = document.getElementById('addProjectEmpty');
+    if (addProjectEmpty) {
+        addProjectEmpty.addEventListener('click', () => showSection('addProject'));
+    }
+
+    // Setup cancel button
+    const cancelProjectBtn = document.getElementById('cancelProjectBtn');
+    if (cancelProjectBtn) {
+        cancelProjectBtn.addEventListener('click', () => showSection('projects'));
+    }
 
     // Show initial section
     showSection('overview');
@@ -159,6 +359,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 const submitProject = async (e) => {
     e.preventDefault();
     
+    const projectForm = document.getElementById('projectForm');
     const projectName = document.getElementById('projectName').value;
     const projectDescription = document.getElementById('projectDescription').value;
     const githubLink = document.getElementById('githubLink').value;
@@ -178,7 +379,7 @@ const submitProject = async (e) => {
         statusElement.className = 'form-status success';
         
         // Reset form
-        projectForm.reset();
+        if (projectForm) projectForm.reset();
         
         // Refresh projects list
         const projects = await fetchProjects();
@@ -204,13 +405,13 @@ function showSection(sectionId) {
         section.classList.add('active');
     }
     
-    // Update active nav item
-    document.querySelectorAll('.nav-item').forEach(item => {
+    // Update active dropdown item
+    document.querySelectorAll('.dropdown-item[data-section]').forEach(item => {
         item.classList.remove('active');
     });
     
-    const navItem = document.querySelector(`.nav-item[data-section="${sectionId}"]`);
-    if (navItem) {
-        navItem.classList.add('active');
+    const dropdownItem = document.querySelector(`.dropdown-item[data-section="${sectionId}"]`);
+    if (dropdownItem) {
+        dropdownItem.classList.add('active');
     }
 }

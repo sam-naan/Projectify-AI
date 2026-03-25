@@ -3,12 +3,12 @@
  * Handles communication with backend API
  */
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'http://127.0.0.1:5001/api';
 
 class ApiService {
     constructor() {
-        this.token = localStorage.getItem('auth_token');
-        this.user = JSON.parse(localStorage.getItem('user') || 'null');
+        this.token = null;
+        this.user = null;
     }
 
     /**
@@ -16,7 +16,6 @@ class ApiService {
      */
     setToken(token) {
         this.token = token;
-        localStorage.setItem('auth_token', token);
     }
 
     /**
@@ -24,7 +23,6 @@ class ApiService {
      */
     setUser(user) {
         this.user = user;
-        localStorage.setItem('user', JSON.stringify(user));
     }
 
     /**
@@ -33,8 +31,6 @@ class ApiService {
     clearAuth() {
         this.token = null;
         this.user = null;
-        localStorage.removeItem('auth_token');
-        localStorage.removeItem('user');
     }
 
     /**
@@ -52,39 +48,45 @@ class ApiService {
         return headers;
     }
 
-    /**
-     * Make API request
-     */
-    async request(endpoint, options = {}) {
-        const url = `${API_BASE_URL}${endpoint}`;
-        
-        const defaultOptions = {
-            headers: this.getHeaders(!options.public),
-            ...options
-        };
+ /**
+ * Make API request
+ */
+async request(endpoint, options = {}) {
+    const url = `${API_BASE_URL}${endpoint}`;
 
-        try {
-            const response = await fetch(url, defaultOptions);
-            
-            // Handle 401 Unauthorized
-            if (response.status === 401 && !options.public) {
-                this.clearAuth();
-                window.location.href = 'index.html';
-                throw new Error('Session expired. Please log in again.');
-            }
+    const defaultOptions = {
+        headers: this.getHeaders(!options.public),
+        ...options
+    };
 
-            const data = await response.json();
+    try {
+        const response = await fetch(url, defaultOptions);
 
-            if (!response.ok) {
-                throw new Error(data.message || `API error: ${response.status}`);
-            }
-
-            return data;
-        } catch (error) {
-            console.error('API request failed:', error);
-            throw error;
+        // Handle 401 Unauthorized
+        if (response.status === 401 && !options.public) {
+            this.clearAuth();
+            window.location.href = 'index.html';
+            throw new Error('Session expired. Please log in again.');
         }
+
+        // Safely parse JSON only if content-type is JSON
+        let data = null;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        }
+
+        if (!response.ok) {
+            const message = (data && data.message) ? data.message : `API error: ${response.status}`;
+            throw new Error(message);
+        }
+
+        return data;
+    } catch (error) {
+        console.error('API request failed:', error);
+        throw error;
     }
+}
 
     /**
      * Check if user is authenticated

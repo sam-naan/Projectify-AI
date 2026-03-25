@@ -10,9 +10,50 @@ try {
   // Check if Firebase has already been initialized
   if (!admin.apps.length) {
     // For production, use service account from environment variable or file
-    const serviceAccount = process.env.FIREBASE_SERVICE_ACCOUNT
-      ? JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT)
-      : require('../../firebase-service-account.json');
+    let serviceAccount;
+    if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+      try {
+        // Try to parse as JSON first (for environment variables that contain the JSON string)
+        serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+        console.log('✅ Loaded service account from JSON environment variable');
+      } catch (error) {
+        // If parsing fails, treat it as a file path
+        const fs = require('fs');
+        const path = require('path');
+        
+        // Try multiple possible locations for the file
+        const possiblePaths = [
+          // Relative to this file's location (src/config)
+          path.resolve(__dirname, process.env.FIREBASE_SERVICE_ACCOUNT),
+          // Relative to project root (backend directory)
+          path.resolve(__dirname, '../..', process.env.FIREBASE_SERVICE_ACCOUNT),
+          // Relative to current working directory (where server was started)
+          path.resolve(process.cwd(), process.env.FIREBASE_SERVICE_ACCOUNT),
+          // Absolute path (if provided)
+          path.resolve(process.env.FIREBASE_SERVICE_ACCOUNT)
+        ];
+        
+        let foundPath = null;
+        for (const possiblePath of possiblePaths) {
+          if (fs.existsSync(possiblePath)) {
+            foundPath = possiblePath;
+            break;
+          }
+        }
+        
+        if (foundPath) {
+          console.log(`✅ Loaded service account from file: ${foundPath}`);
+          serviceAccount = require(foundPath);
+        } else {
+          console.error('❌ Service account file not found. Tried paths:', possiblePaths);
+          throw new Error(`Service account file not found. Checked: ${possiblePaths.join(', ')}`);
+        }
+      }
+    } else {
+      // Fallback to default location (relative to this file)
+      console.log('⚠️ No FIREBASE_SERVICE_ACCOUNT env var, using default location');
+      serviceAccount = require('../../firebase-service-account.json');
+    }
 
     firebaseApp = admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
@@ -73,18 +114,18 @@ const verifyIdToken = async (idToken) => {
 };
 
 // Helper function to get user by UID
-const getUserById = async (uid) => {
+const getUserByEmail = async (email) => {
   try {
     if (!auth) {
       throw new Error('Firebase Auth not initialized');
     }
     
-    const userRecord = await auth.getUser(uid);
+    const userRecord = await auth.getUserByEmail(email);
     return {
       uid: userRecord.uid,
       email: userRecord.email,
       emailVerified: userRecord.emailVerified,
-      displayName: userRecord.displayName,
+      fullName: userRecord.fullName,
       photoURL: userRecord.photoURL,
       disabled: userRecord.disabled,
       metadata: userRecord.metadata
@@ -116,7 +157,7 @@ module.exports = {
   firestore,
   storage,
   verifyIdToken,
-  getUserById,
+  getUserByEmail,
   createCustomToken,
   firebaseApp
 };

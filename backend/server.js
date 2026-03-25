@@ -33,8 +33,8 @@ if (process.env.FRONTEND_URL) {
     }
   };
 } else {
-  // Default to localhost:3000 and localhost:5500 for development
-  corsOptions.origin = ['http://localhost:3000', 'http://localhost:5500'];
+  // Default to localhost:3000, localhost:5500, and 127.0.0.1:5500 for development
+  corsOptions.origin = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500'];
 }
 
 app.use(cors(corsOptions));
@@ -80,8 +80,9 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`✅ Server is active on http://127.0.0.1:${PORT}`);
   console.log(`📁 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🌐 Health check: http://localhost:${PORT}/health`);
 });

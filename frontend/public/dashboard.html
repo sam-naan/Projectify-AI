@@ -12,87 +12,36 @@
 </head>
 <body>
     <div class="dashboard-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">
-                    <i class="fas fa-robot"></i>
-                    <h2>Projectify<span class="ai-text">AI</span></h2>
-                </div>
-                <button class="menu-toggle" id="menuToggle">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-            
-            <div class="user-profile">
-                <div class="avatar">
-                    <i class="fas fa-user-circle"></i>
-                </div>
-                <div class="user-info">
-                    <h4 id="userName">Loading...</h4>
-                    <p id="userEmail">user@example.com</p>
-                </div>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <a href="#" class="nav-item active" data-section="overview">
-                    <i class="fas fa-tachometer-alt"></i>
-                    <span>Overview</span>
-                </a>
-                <a href="#" class="nav-item" data-section="projects">
-                    <i class="fas fa-project-diagram"></i>
-                    <span>My Projects</span>
-                    <span class="badge" id="projectsCount">0</span>
-                </a>
-                <a href="#" class="nav-item" data-section="add-project">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Add Project</span>
-                </a>
-                <a href="#" class="nav-item" data-section="ai-insights">
-                    <i class="fas fa-brain"></i>
-                    <span>AI Insights</span>
-                </a>
-                <a href="#" class="nav-item" data-section="analytics">
-                    <i class="fas fa-chart-line"></i>
-                    <span>Analytics</span>
-                </a>
-                <div class="nav-divider"></div>
-                <a href="#" class="nav-item" data-section="settings">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-                <a href="#" class="nav-item" id="logoutBtn">
-                    <i class="fas fa-sign-out-alt"></i>
-                    <span>Logout</span>
-                </a>
-            </nav>
-            
-            <div class="sidebar-footer">
-                <div class="ai-status">
-                    <div class="status-indicator online"></div>
-                    <span>AI Service: <strong id="aiStatus">Online</strong></span>
-                </div>
-                <p class="version">v1.0.0</p>
-            </div>
-        </aside>
-
         <!-- Main Content -->
         <main class="main-content">
             <header class="topbar">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" placeholder="Search projects..." id="searchInput">
+                <!-- Logo in place of search bar -->
+                <div class="logo-container">
+                    <div class="logo">
+                        <i class="fas fa-robot"></i>
+                        <h2>Projectify<span class="ai-text">AI</span></h2>
+                    </div>
                 </div>
+                
                 <div class="topbar-actions">
-                    <button class="btn btn-outline btn-small" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i> Refresh
-                    </button>
                     <button class="btn btn-primary btn-small" id="newProjectBtn">
-                        <i class="fas fa-plus"></i> New Project
+                        <i class="fas fa-plus"></i> Add Project
                     </button>
-                    <div class="notifications">
-                        <i class="fas fa-bell"></i>
-                        <span class="notification-badge">3</span>
+                    
+                    <!-- Profile dropdown -->
+                    <div class="profile-dropdown-container">
+                        <button class="profile-btn" id="profileDropdownBtn">
+                            <div class="avatar-small">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                        </button>
+                        <div class="profile-dropdown" id="profileDropdown">
+                            <div class="dropdown-divider"></div>
+                            <button class="dropdown-item logout-item" id="dropdownLogoutBtn">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Logout</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -160,25 +109,6 @@
                         </div>
                     </div>
                     
-                    <div class="ai-tips">
-                        <div class="section-header">
-                            <h4>AI Improvement Tips</h4>
-                            <i class="fas fa-robot"></i>
-                        </div>
-                        <div class="tips-list" id="aiTips">
-                            <div class="tip-card">
-                                <i class="fas fa-code"></i>
-                                <p>Add comprehensive tests to improve code quality score</p>
-                            </div>
-                            <div class="tip-card">
-                                <i class="fas fa-book"></i>
-                                <p>Improve documentation for better maintainability</p>
-                            </div>
-                            <div class="tip-card">
-                                <i class="fas fa-server"></i>
-                                <p>Consider adding CI/CD pipeline for automation</p>
-                            </div>
-                        </div>
                     </div>
                 </section>
 
@@ -241,6 +171,22 @@
                                 <label for="githubLink">GitHub Repository Link</label>
                                 <input type="url" id="githubLink" placeholder="https://github.com/username/repository">
                                 <div class="form-help">Optional: Link to your GitHub repository for better analysis</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="zipFile">Project Zip File</label>
+                                <div class="file-upload">
+                                    <input type="file" id="zipFile" accept=".zip,.rar,.7z,.tar,.gz" class="file-input">
+                                    <label for="zipFile" class="file-label">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <span>Choose a zip file or drag & drop</span>
+                                        <span class="file-hint">Max size: 50MB</span>
+                                    </label>
+                                    <div class="file-preview" id="zipFilePreview"></div>
+                                </div>
+                                <div class="form-help">Optional: Upload a zip file of your project for detailed analysis</div>
                             </div>
                         </div>
                         

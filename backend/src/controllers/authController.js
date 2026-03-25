@@ -8,51 +8,94 @@ const { auth, firestore, createCustomToken } = require('../config/firebase');
 /**
  * Register a new user
  * Creates user record in Firestore
+ * This is the backend endpoint for mock registration (frontend creates Firebase user first)
  */
-const register = async (email, password, displayName = '') => {
-    const firebaseConfigured = await this.isFirebaseConfigured();
+const bcrypt = require('bcrypt');
+
+const register = async (req, res) => {
+  try {
+    const { fullName, email, password, uid } = req.body;
+    console.log("Register request body:", req.body);
+
+    // Validate required fields
+    if (!fullName || !email || !password || !uid) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        message: 'Full name, email, password, and uid are required'
+      });
+    }
+
+    // Check if Firebase Firestore is available
+    if (!firestore) {
+      console.warn('Firestore not available, skipping user persistence');
+      // Return success without storing in Firestore (for development)
+      return res.status(201).json({
+        message: 'User registered successfully (Firestore not available)',
+        user: { fullName, email },
+        warning: 'User data not persisted to database'
+      });
+    }
+
+    // Check if user already exists by UID
+    const userRef = firestore.collection('users').doc(uid);
+    const userDoc = await userRef.get();
+
+    if (userDoc.exists) {
+      return res.status(409).json({
+        error: 'User already exists',
+        message: 'User with this UID already exists'
+      });
+    }
+
+    // Also check if email is already used (optional but good for uniqueness)
+    const emailQuery = await firestore.collection('users').where('email', '==', email).limit(1).get();
+    if (!emailQuery.empty) {
+      return res.status(409).json({
+        error: 'User already exists',
+        message: 'User with this email already exists'
+      });
+    }
+
+    // Hash password before saving
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user record
+    const userData = {
+      uid,
+      fullName,
+      email,
+      password: hashedPassword,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    await userRef.set(userData);
+
+    return res.status(201).json({
+      message: 'User registered successfully',
+      user: { uid, fullName, email } // don't return password
+    });
+
+  } catch (error) {
+    console.error('Registration error:', error);
     
-    if (!firebaseConfigured) {
-        return this.mockRegister(email, password, displayName);
+    // If it's a Firestore permission error, still return success for development
+    if (error.message.includes('UNAUTHENTICATED') || error.message.includes('permission')) {
+      console.warn('Firestore authentication error, returning success for development');
+      return res.status(201).json({
+        message: 'User registered successfully (Firestore authentication issue)',
+        user: { uid: req.body.uid, fullName: req.body.fullName, email: req.body.email },
+        warning: 'Firestore authentication failed, user data not persisted'
+      });
     }
     
-    try {
-        // Step 1: Create user in Firebase Auth
-        const userCredential = await firebaseFunctions.createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Step 2: Set the Display Name in Firebase
-        if (displayName) {
-            await firebaseFunctions.updateProfile(user, { displayName });
-        }
-
-        // Step 3: Get the Token
-        const token = await user.getIdToken();
-        apiService.setToken(token); // Use 'token' consistently!
-
-        // Step 4: CRITICAL - Trigger the Backend Registration
-        // This ensures the user is actually stored in Firestore
-        try {
-            await apiService.auth.register({
-                uid: user.uid,
-                email: user.email,
-                displayName: displayName || user.displayName,
-                isMock: false // Explicitly tell backend this is a real user
-            });
-        } catch (backendError) {
-            console.error('Auth succeeded but Firestore sync failed:', backendError);
-            // Optional: Handle what happens if DB write fails but Auth worked
-        }
-
-        return {
-            success: true,
-            user: { uid: user.uid, email: user.email },
-            message: 'Registration successful'
-        };
-    } catch (error) {
-        return { success: false, error: this.getFirebaseErrorMessage(error) };
-    }
-}
+    return res.status(500).json({
+      error: 'Registration failed',
+      message: 'An error occurred during registration',
+      details: error.message
+    });
+  }
+};
 
 /**
  * Login user
@@ -61,11 +104,26 @@ const register = async (email, password, displayName = '') => {
  */
 const loginUser = async (req, res) => {
   try {
-    const { uid } = req.body; // Pass the UID from the frontend after Firebase login
+    const { uid, email } = req.body; // Accept both uid and email
 
-    const userDoc = await firestore.collection('users').doc(uid).get();
+    let userDoc = null;
     
-    if (!userDoc.exists) {
+    // First try to fetch by UID (new format)
+    if (uid) {
+      userDoc = await firestore.collection('users').doc(uid).get();
+    }
+    
+    // If not found by UID, try to find by email (old format or fallback)
+    if (!userDoc || !userDoc.exists) {
+      if (email) {
+        const emailQuery = await firestore.collection('users').where('email', '==', email).limit(1).get();
+        if (!emailQuery.empty) {
+          userDoc = emailQuery.docs[0];
+        }
+      }
+    }
+    
+    if (!userDoc || !userDoc.exists) {
       return res.status(404).json({ message: 'User not found in database' });
     }
 
@@ -284,8 +342,8 @@ module.exports = {
   register,
   loginUser,
   verifyToken,
-  createCustomAuthToken,
   getCurrentUser,
   updateUserProfile,
-  logoutUser
+  logoutUser,
+  createCustomAuthToken
 };

@@ -162,16 +162,24 @@ const validateAuthRequest = (req, res, next) => {
  * Validation middleware for mock registration requests
  */
 const validateMockRegistration = (req, res, next) => {
-  const { uid, email } = req.body;
+  const { fullName, email, password, uid } = req.body;
   
   const errors = [];
   
-  if (!uid || typeof uid !== 'string') {
-    errors.push('Valid UID is required');
+  if (!fullName || typeof fullName !== 'string' || fullName.trim().length === 0) {
+    errors.push('Valid full name is required');
   }
   
   if (!email || typeof email !== 'string' || !email.includes('@')) {
     errors.push('Valid email is required');
+  }
+  
+  if (!password || typeof password !== 'string' || password.length < 6) {
+    errors.push('Password must be at least 6 characters long');
+  }
+  
+  if (!uid || typeof uid !== 'string' || uid.trim().length === 0) {
+    errors.push('Valid UID is required');
   }
   
   if (errors.length > 0) {
