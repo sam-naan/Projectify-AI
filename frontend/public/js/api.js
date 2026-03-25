@@ -3,7 +3,31 @@
  * Handles communication with backend API
  */
 
-const API_BASE_URL = 'http://127.0.0.1:5001/api';
+// Determine API base URL based on current environment
+const getApiBaseUrl = () => {
+  // Check if we're in development (localhost) or production
+  const hostname = window.location.hostname;
+  const protocol = window.location.protocol;
+  
+  // If running on localhost, use local backend
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://127.0.0.1:5001/api';
+  }
+  
+  // If running on Netlify, use production backend URL
+  // TODO: Replace with actual production backend URL when deployed
+  if (hostname === 'projectify-ai.netlify.app') {
+    // For now, we'll use a placeholder - you need to deploy your backend
+    // and update this URL to point to your production backend
+    console.warn('Using placeholder production URL. Please update with actual backend URL.');
+    return 'https://projectify-ai-backend.onrender.com/api'; // Example placeholder
+  }
+  
+  // Default fallback (for other deployments)
+  return `${protocol}//${hostname}/api`;
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 class ApiService {
     constructor() {
