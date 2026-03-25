@@ -307,16 +307,16 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For support, feature requests, or bug reports:
 - Open an issue on GitHub
-- Email: support@projectify-ai.com
-- Join our Discord community
+- Email: sanadisamnaan@gmail.com
+- Join on Discord community
 
 ---
 
 <div align="center">
 
-Made with ❤️ by the Projectify-AI Team
+Made with ❤️ by Samnaan Sanadi
 
-[![GitHub Stars](https://img.shields.io/github/stars/your-username/projectify-ai?style=social)](https://github.com/your-username/projectify-ai)
-[![GitHub Forks](https://img.shields.io/github/forks/your-username/projectify-ai?style=social)](https://github.com/your-username/projectify-ai)
+[![GitHub Stars](https://img.shields.io/github/stars/sam-naan/Projectify-AI?style=social)](https://github.com/sam-naan/Projectify-AI)
+[![GitHub Forks](https://img.shields.io/github/forks/sam-naan/Projectify-AI?style=social)](https://github.com/sam-naan/Projectify-AI)
 
 </div>
