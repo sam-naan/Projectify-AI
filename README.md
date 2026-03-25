@@ -134,7 +134,7 @@ Projectify-AI/
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/sam-naan/projectify-ai.git
+git clone https://github.com/sam-naan/Projectify-AI.git
 cd projectify-ai
 ```
 
