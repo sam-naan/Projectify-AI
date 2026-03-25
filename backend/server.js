@@ -33,8 +33,15 @@ if (process.env.FRONTEND_URL) {
     }
   };
 } else {
-  // Default to localhost:3000, localhost:5500, and 127.0.0.1:5500 for development
-  corsOptions.origin = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500'];
+  // If no FRONTEND_URL is set, check environment
+  if (process.env.NODE_ENV === 'production') {
+    // In production, we should have FRONTEND_URL set, but as a fallback, allow common origins
+    console.warn('WARNING: FRONTEND_URL not set in production. CORS may be too restrictive.');
+    corsOptions.origin = ['https://projectify-ai.netlify.app'];
+  } else {
+    // In development, allow common localhost origins and be more permissive
+    corsOptions.origin = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000'];
+  }
 }
 
 app.use(cors(corsOptions));
