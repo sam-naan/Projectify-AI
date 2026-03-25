@@ -6,6 +6,7 @@ const { firestore } = require('../config/firebase');
  */
 class Project {
   constructor({
+    id = null,
     userId,
     name,
     description,
@@ -20,6 +21,7 @@ class Project {
     aiModel = null,
     isMockAnalysis = false
   }) {
+    this.id = id;
     this.userId = userId;
     this.name = name;
     this.description = description;
@@ -39,7 +41,7 @@ class Project {
    * Convert to plain JavaScript object
    */
   toObject() {
-    return {
+    const obj = {
       userId: this.userId,
       name: this.name,
       description: this.description,
@@ -54,6 +56,14 @@ class Project {
       aiModel: this.aiModel,
       isMockAnalysis: this.isMockAnalysis
     };
+    
+    // Always include id if it's defined (even if null or empty string)
+    // This ensures the frontend can access the document ID
+    if (this.id !== undefined) {
+      obj.id = this.id;
+    }
+    
+    return obj;
   }
 
   /**

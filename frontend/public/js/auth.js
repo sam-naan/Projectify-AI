@@ -174,6 +174,59 @@ class AuthService {
     }
 
     /**
+     * Wait for authentication state to be determined
+     * @param {number} timeoutMs Maximum time to wait in milliseconds (default: 5000ms)
+     * @returns {Promise<boolean>} Promise that resolves to true if authenticated, false if not
+     */
+    waitForAuthState(timeoutMs = 5000) {
+        return new Promise((resolve) => {
+            // If auth state is already known, resolve immediately
+            if (this.isAuthenticated()) {
+                resolve(true);
+                return;
+            }
+            
+            // Check if Firebase auth is already available with a user
+            if (window.firebase && window.firebase.auth && window.firebase.auth.currentUser) {
+                resolve(true);
+                return;
+            }
+            
+            // Declare listener variable before timeout so it's in scope
+            let listener = null;
+            
+            // Set up a timeout
+            const timeoutId = setTimeout(() => {
+                // Clean up listener
+                if (listener) {
+                    const index = this.authListeners.indexOf(listener);
+                    if (index > -1) this.authListeners.splice(index, 1);
+                }
+                resolve(false);
+            }, timeoutMs);
+            
+            // Add a listener for auth state changes
+            listener = (user) => {
+                if (user) {
+                    clearTimeout(timeoutId);
+                    // Clean up listener
+                    const index = this.authListeners.indexOf(listener);
+                    if (index > -1) this.authListeners.splice(index, 1);
+                    resolve(true);
+                }
+            };
+            
+            this.authListeners.push(listener);
+            
+            // Also check if we're using mock auth
+            if (this.usingMockAuth) {
+                clearTimeout(timeoutId);
+                resolve(false);
+            }
+        });
+    }
+
+    /**
      * Logout the current user
      * @returns {Promise<void>}
      */

@@ -24,10 +24,6 @@
                 </div>
                 
                 <div class="topbar-actions">
-                    <button class="btn btn-primary btn-small" id="newProjectBtn">
-                        <i class="fas fa-plus"></i> Add Project
-                    </button>
-                    
                     <!-- Profile dropdown -->
                     <div class="profile-dropdown-container">
                         <button class="profile-btn" id="profileDropdownBtn">
@@ -36,6 +32,15 @@
                             </div>
                         </button>
                         <div class="profile-dropdown" id="profileDropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="dropdown-user-info">
+                                    <h4 id="dropdownUserName">User Name</h4>
+                                    <p id="dropdownUserEmail">user@example.com</p>
+                                </div>
+                            </div>
                             <div class="dropdown-divider"></div>
                             <button class="dropdown-item logout-item" id="dropdownLogoutBtn">
                                 <i class="fas fa-sign-out-alt"></i>
@@ -52,7 +57,6 @@
                 <section id="overviewSection" class="content-section active">
                     <div class="section-header">
                         <h3>Dashboard Overview</h3>
-                        <p>Welcome back! Here's your project summary.</p>
                     </div>
                     
                     <div class="stats-grid">
@@ -96,16 +100,14 @@
                     
                     <div class="recent-projects">
                         <div class="section-header">
-                            <h4>Recent Projects</h4>
-                            <a href="#" class="view-all" data-section="projects">View All</a>
+                            <h4>Projects</h4>
+                            <a href="javascript:void(0);" class="view-all-link" id="viewAllProjects">
+                                View All <i class="fas fa-arrow-right"></i>
+                            </a>
                         </div>
-                        <div class="projects-list" id="recentProjects">
+                        <div class="projects-list" id="Projects">
+                            
                             <!-- Recent projects will be loaded here -->
-                            <div class="empty-state">
-                                <i class="fas fa-project-diagram"></i>
-                                <p>No projects yet. Add your first project!</p>
-                                <button class="btn btn-primary" id="addFirstProject">Add Project</button>
-                            </div>
                         </div>
                     </div>
                     
@@ -115,16 +117,13 @@
                 <!-- Projects Section -->
                 <section id="projectsSection" class="content-section">
                     <div class="section-header">
-                        <h3>My Projects</h3>
+                        <div class="section-header-left">
+                            <button class="btn btn-back" id="backToDashboardBtn" title="Back to Dashboard">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <h3>My Projects</h3>
+                        </div>
                         <div class="section-actions">
-                            <div class="filter-options">
-                                <select id="projectFilter">
-                                    <option value="all">All Projects</option>
-                                    <option value="high-score">High Score (80+)</option>
-                                    <option value="medium-score">Medium Score (50-79)</option>
-                                    <option value="low-score">Low Score (0-49)</option>
-                                </select>
-                            </div>
                             <button class="btn btn-primary" id="addProjectBtn">
                                 <i class="fas fa-plus"></i> Add Project
                             </button>
@@ -272,11 +271,7 @@
                 </section>
 
                 <!-- Settings Section -->
-                <section id="settingsSection" class="content-section">
-                    <div class="section-header">
-                        <h3>Account Settings</h3>
-                        <p>Manage your account and preferences</p>
-                    </div>
+                <section id="settingsSection" class="content-section"></section>
                     
                     <div class="settings-container">
                         <div class="settings-card">
