@@ -17,38 +17,61 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 
-// CORS configuration
-const corsOptions = {
-  credentials: true
-};
+// Custom CORS middleware - adds headers to ALL responses
+app.use((req, res, next) => {
+  // Determine allowed origins
+  let allowedOrigins = [];
+  
+  if (process.env.FRONTEND_URL) {
+    allowedOrigins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
+  } else if (process.env.NODE_ENV === 'production') {
+    allowedOrigins = ['https://projectify-ai.netlify.app'];
+  } else {
+    allowedOrigins = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000'];
+  }
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin) || !origin) {
+    res.header('Access-Control-Allow-Origin', origin || allowedOrigins[0]);
+  }
+  
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Credentials', 'true');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
+  next();
+});
 
-// Parse FRONTEND_URL as comma-separated list or single URL
-if (process.env.FRONTEND_URL) {
-  const origins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
-  corsOptions.origin = origins.length === 1 ? origins[0] : function (origin, callback) {
-    if (origins.indexOf(origin) !== -1 || !origin) {
+// CORS configuration for the cors package (as backup)
+const corsOptions = {
+  credentials: true,
+  origin: function (origin, callback) {
+    // Determine allowed origins (same logic as above)
+    let allowedOrigins = [];
+    
+    if (process.env.FRONTEND_URL) {
+      allowedOrigins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
+    } else if (process.env.NODE_ENV === 'production') {
+      allowedOrigins = ['https://projectify-ai.netlify.app'];
+    } else {
+      allowedOrigins = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000'];
+    }
+    
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
     }
-  };
-} else {
-  // If no FRONTEND_URL is set, check environment
-  if (process.env.NODE_ENV === 'production') {
-    // In production, we should have FRONTEND_URL set, but as a fallback, allow common origins
-    console.warn('WARNING: FRONTEND_URL not set in production. CORS may be too restrictive.');
-    corsOptions.origin = ['https://projectify-ai.netlify.app'];
-  } else {
-    // In development, allow common localhost origins and be more permissive
-    corsOptions.origin = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000'];
   }
-}
+};
 
-// Apply CORS middleware
+// Apply CORS middleware as backup
 app.use(cors(corsOptions));
-
-// Handle preflight requests for all routes
-app.options('*', cors(corsOptions));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
