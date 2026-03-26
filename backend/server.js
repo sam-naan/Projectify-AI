@@ -17,36 +17,35 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 
-// CORS setup
-const DEFAULT_ALLOWED_ORIGINS = [
-  'http://localhost:3000',
-  'http://localhost:5500',
-  'http://127.0.0.1:5500',
-  'http://localhost:5000',
-  'http://127.0.0.1:5000',
-  'https://projectify-ai.netlify.app'
-];
-
-const allowedOrigins = process.env.FRONTEND_URL
-  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
-  : (process.env.NODE_ENV === 'production' ? ['https://projectify-ai.netlify.app'] : DEFAULT_ALLOWED_ORIGINS);
-
+// CORS configuration
 const corsOptions = {
-  origin: (origin, callback) => {
+  credentials: true,
+  origin: function (origin, callback) {
+    // Determine allowed origins
+    let allowedOrigins = [];
+    
+    if (process.env.FRONTEND_URL) {
+      allowedOrigins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
+    } else if (process.env.NODE_ENV === 'production') {
+      allowedOrigins = ['https://projectify-ai.netlify.app'];
+    } else {
+      allowedOrigins = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000'];
+    }
+    
+    // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error(`CORS policy: Origin ${origin} is not allowed`));
+      console.warn(`CORS blocked for origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 };
 
+// Apply CORS middleware
 app.use(cors(corsOptions));
-app.options('*', cors(corsOptions), (req, res) => res.sendStatus(204));
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
