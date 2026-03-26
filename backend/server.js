@@ -17,61 +17,36 @@ const limiter = rateLimit({
 // Middleware
 app.use(helmet());
 
-// Custom CORS middleware - adds headers to ALL responses
-app.use((req, res, next) => {
-  // Determine allowed origins
-  let allowedOrigins = [];
-  
-  if (process.env.FRONTEND_URL) {
-    allowedOrigins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
-  } else if (process.env.NODE_ENV === 'production') {
-    allowedOrigins = ['https://projectify-ai.netlify.app'];
-  } else {
-    allowedOrigins = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000'];
-  }
-  
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin) || !origin) {
-    res.header('Access-Control-Allow-Origin', origin || allowedOrigins[0]);
-  }
-  
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.header('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight requests
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  next();
-});
+// CORS setup
+const DEFAULT_ALLOWED_ORIGINS = [
+  'http://localhost:3000',
+  'http://localhost:5500',
+  'http://127.0.0.1:5500',
+  'http://localhost:5000',
+  'http://127.0.0.1:5000',
+  'https://projectify-ai.netlify.app'
+];
 
-// CORS configuration for the cors package (as backup)
+const allowedOrigins = process.env.FRONTEND_URL
+  ? process.env.FRONTEND_URL.split(',').map(url => url.trim())
+  : (process.env.NODE_ENV === 'production' ? ['https://projectify-ai.netlify.app'] : DEFAULT_ALLOWED_ORIGINS);
+
 const corsOptions = {
-  credentials: true,
-  origin: function (origin, callback) {
-    // Determine allowed origins (same logic as above)
-    let allowedOrigins = [];
-    
-    if (process.env.FRONTEND_URL) {
-      allowedOrigins = process.env.FRONTEND_URL.split(',').map(url => url.trim());
-    } else if (process.env.NODE_ENV === 'production') {
-      allowedOrigins = ['https://projectify-ai.netlify.app'];
-    } else {
-      allowedOrigins = ['http://localhost:3000', 'http://localhost:5500', 'http://127.0.0.1:5500', 'http://localhost:5000', 'http://127.0.0.1:5000'];
-    }
-    
+  origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error(`CORS policy: Origin ${origin} is not allowed`));
     }
-  }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
 };
 
-// Apply CORS middleware as backup
 app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
